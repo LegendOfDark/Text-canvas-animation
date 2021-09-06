@@ -6,6 +6,9 @@ canvas.height = window.innerHeight;
 
 let particleArr = [];
 
+let AdjustX = 20;
+let AdjustY = 15;
+
 //handle mouse
 const mouse = {
     x: null,
@@ -27,8 +30,8 @@ window.addEventListener('mousemove', (e) => {
 });
 
 c.fillStyle = 'white';
-c.font = '30px Verdanna';
-c.fillText('A', 0, 30);
+c.font = '30px Arial';
+c.fillText('Bot', 13, 35);
 const text_coord = c.getImageData(0, 0, 100, 100);
 
 class Particle {
@@ -54,8 +57,8 @@ class Particle {
         let dx = mouse.x - this.x;
         let dy = mouse.y - this.y;
         let distance = Math.hypot(dx, dy);
-        let force_x = dx / distance;
-        let force_y = dy / distance;
+        let force_x = +dx / distance;
+        let force_y = +dy / distance;
         let maxDistnc = mouse.radius;
         let force = (maxDistnc - distance) / maxDistnc;
         let directionX = force_x * force * this.density;
@@ -75,19 +78,25 @@ class Particle {
                 this.y -= dy / 7;
             }
         }
+        this.draw();
     }
 
 }
 
 let init = () => {
-    particleArr = [];
-    for (let i = 0; i < 1500; i++){
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
-        particleArr.push(new Particle(x, y));
-    }
-
-
+    particleArr = [];    
+    console.log(text_coord); 
+    let counter = 3;                                                
+    for (let y = 3, y2 = text_coord.height; y < y2; y++){
+        for (let x = 0, x2 = text_coord.width; x < x2; x++){
+            if (text_coord.data[counter] > 128){
+                let position_x = x * AdjustX;
+                let position_y = y * AdjustY;
+                particleArr.push(new Particle(position_x, position_y));
+            }
+            counter += 4;
+        }
+    }                                               
 }
 init();
 console.log(particleArr);
@@ -95,7 +104,6 @@ console.log(particleArr);
 let animate = () => {
     c.clearRect(0, 0, canvas.width, canvas.height);
     for (let x = 0; x < particleArr.length; x++){
-        particleArr[x].draw();
         particleArr[x].update();
     }
     requestAnimationFrame(animate);

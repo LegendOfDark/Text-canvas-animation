@@ -1,13 +1,16 @@
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
+var today = new Date();
+var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let particleArr = [];
 
-let AdjustX = 20;
-let AdjustY = 15;
+let AdjustX = 2;
+let AdjustY = -10;
 
 //handle mouse
 const mouse = {
@@ -31,8 +34,8 @@ window.addEventListener('mousemove', (e) => {
 
 c.fillStyle = 'white';
 c.font = '30px Arial';
-c.fillText('Bot', 13, 35);
-const text_coord = c.getImageData(0, 0, 100, 100);
+c.fillText('Ali', 7, 35);
+const text_coord = c.getImageData(0, 0, 400, 300);
 
 class Particle {
     constructor(x, y){
@@ -41,12 +44,13 @@ class Particle {
         this.size = 3;
         this.defaultX = this.x;
         this.defaultY = this.y;
-        this.hue = Math.random() * 60 + 240;
+        this.hue = 240;
         this.density = Math.random() * 30 + 2;
     }
     draw(){
         this.hue += 1;
-        c.fillStyle = 'hsl(' + this.hue + ', 100%, 50%)';
+        c.fillStyle = 'hsl(' + this.hue + ', 100%, 80%)';
+        c.fillStyle = this.color;
         c.beginPath();
         c.arc(this.x, this.y, this.size, 0, Math.PI * 2)
         c.closePath();
@@ -56,15 +60,15 @@ class Particle {
     update(){
         let dx = mouse.x - this.x;
         let dy = mouse.y - this.y;
-        let distance = Math.hypot(dx, dy);
-        let force_x = +dx / distance;
-        let force_y = +dy / distance;
+        let mouse_distance = Math.hypot(dx, dy);
+        let force_x = +dx / mouse_distance;
+        let force_y = +dy / mouse_distance;
         let maxDistnc = mouse.radius;
-        let force = (maxDistnc - distance) / maxDistnc;
+        let force = (maxDistnc - mouse_distance) / maxDistnc;
         let directionX = force_x * force * this.density;
         let directionY = force_y * force * this.density;
         
-        if (distance < mouse.radius){
+        if (mouse_distance < mouse.radius){
             this.x -= directionX;
             this.y -= directionY;
         }
@@ -76,6 +80,25 @@ class Particle {
             if (this.y !== this.defaultY){
                 let dy = this.y - this.defaultY;
                 this.y -= dy / 7;
+            }
+        }
+        console.log(mouse_distance);
+        let opacity = 1;
+        for (let i = 0; i < particleArr.length; i++){
+            if (this === particleArr[i]) continue;
+            let dx = this.x - particleArr[i].x;
+            let dy = this.y - particleArr[i].y;
+            let distance = Math.hypot(dx, dy);
+            if (distance < 40){
+                opacity = 1 - (distance / 50);
+                c.strokeStyle = 'hsl(' + this.hue + ', 100%,' + 75 + '%)'; 
+                c.lineWidth = 2;
+                c.beginPath();
+                c.moveTo(this.x, this.y)
+                c.lineTo(particleArr[i].x, particleArr[i].y)
+                c.stroke();
+                c.closePath();
+                
             }
         }
         this.draw();
@@ -90,9 +113,9 @@ let init = () => {
     for (let y = 3, y2 = text_coord.height; y < y2; y++){
         for (let x = 0, x2 = text_coord.width; x < x2; x++){
             if (text_coord.data[counter] > 128){
-                let position_x = x * AdjustX;
-                let position_y = y * AdjustY;
-                particleArr.push(new Particle(position_x, position_y));
+                let position_x = x + AdjustX;
+                let position_y = y + AdjustY;
+                particleArr.push(new Particle(position_x * 25, position_y * 25));
             }
             counter += 4;
         }
